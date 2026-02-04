@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Job Tracker</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 24px; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border: 1px solid #ddd; padding: 8px; }
+    th { background: #f5f5f5; }
+    input, select, button { margin: 4px 0; padding: 6px; }
+  </style>
+</head>
+<body>
+  <h1>Job Tracker</h1>
+
+  <h3>Add Application</h3>
+  <div>
+    <input id="role" placeholder="Role" />
+    <input id="company" placeholder="Company" />
+    <select id="status">
+      <option>Applied</option>
+      <option>Interview</option>
+      <option>Offer</option>
+      <option>Rejected</option>
+    </select>
+    <input id="link" placeholder="Link (optional)" />
+    <input id="notes" placeholder="Notes (optional)" />
+    <button onclick="addJob()">Add</button>
+  </div>
+
+  <h3>Applications</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Role</th>
+        <th>Company</th>
+        <th>Status</th>
+        <th>Link</th>
+        <th>Notes</th>
+      </tr>
+    </thead>
+    <tbody id="jobs"></tbody>
+  </table>
+
+  <script>
+    async function loadJobs() {
+      const res = await fetch('/applications');
+      const jobs = await res.json();
+      const tbody = document.getElementById('jobs');
+      tbody.innerHTML = jobs.map(j => `
+        <tr>
+          <td>${j.role}</td>
+          <td>${j.company}</td>
+          <td>${j.status}</td>
+          <td>${j.link ? `<a href="${j.link}" target="_blank">link</a>` : ''}</td>
+          <td>${j.notes || ''}</td>
+        </tr>
+      `).join('');
+    }
+
+    async function addJob() {
+      const role = document.getElementById('role').value;
+      const company = document.getElementById('company').value;
+      const status = document.getElementById('status').value;
+      const link = document.getElementById('link').value || null;
+      const notes = document.getElementById('notes').value || null;
+
+      await fetch('/applications', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ role, company, status, link, notes })
+      });
+
+      document.getElementById('role').value = '';
+      document.getElementById('company').value = '';
+      document.getElementById('link').value = '';
+      document.getElementById('notes').value = '';
+
+      loadJobs();
+    }
+
+    loadJobs();
+  </script>
+</body>
+</html>
